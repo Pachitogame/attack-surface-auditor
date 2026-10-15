@@ -1,0 +1,31 @@
+{
+  "version_formato": "1.0",
+  "generado_en": "2026-10-14T13:20:43.2485319Z",
+  "objetivo": "127.0.0.1",
+  "estado": "completada",
+  "endpoints": [
+    {
+      "endpoint": {
+        "DireccionObjetivo": "127.0.0.1",
+        "Puerto": 80
+      },
+      "estado": "Abierto",
+      "web": {
+        "url": "http://127.0.0.1:80/",
+        "codigo_estado": 200,
+        "cabeceras": {
+          "Content-Length": [
+            "58"
+          ],
+          "Content-Type": [
+            "text/html; charset=utf-8"
+          ],
+          "Server": [
+            "AuditorDemo"
+          ]
+        },
+        "titulo": "Auditor \u0026 Web"
+      }
+    }
+  ]
+}

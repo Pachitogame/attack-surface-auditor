@@ -97,3 +97,8 @@ GitHub Actions ejecuta el análisis, las pruebas con detector de carreras y la c
 | `internal/webinspect` | Inspección HTTP y HTTPS y extracción del título HTML |
 | `internal/vuln` | Cliente de NVD, paginación y limitación de peticiones |
 | `internal/report` | Modelos del informe y exportación a JSON |
+## Informe de ejemplo
+
+Puedes consultar un [informe JSON de una inspección web local](examples/informe-web.json).
+
+Incluye el estado del puerto, la URL, el código de respuesta HTTP, las cabeceras y el título HTML.
