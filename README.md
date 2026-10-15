@@ -1,5 +1,5 @@
 # Attack Surface Auditor
-
+[![Go CI](https://github.com/Pachitogame/attack-surface-auditor/actions/workflows/ci.yml/badge.svg)](https://github.com/Pachitogame/attack-surface-auditor/actions/workflows/ci.yml)
 Herramienta de línea de comandos desarrollada en Go para explorar puertos TCP, identificar servicios mediante sus banners, inspeccionar servicios web y consultar CVEs candidatos en NVD.
 
 ## Funcionalidades
