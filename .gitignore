@@ -5,3 +5,4 @@
 
 # Reportes generados durante las pruebas
 /informe-*.json
+/dist/
