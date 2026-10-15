@@ -1,0 +1,7 @@
+# Ejecutables generados
+/auditor
+/auditor.exe
+/auditor-linux-amd64
+
+# Reportes generados durante las pruebas
+/informe-*.json

@@ -1,0 +1,51 @@
+name: Go CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    env:
+      CGO_ENABLED: "1"
+      CC: gcc
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Comprobar Go
+        run: go version
+
+      - name: Comprobar el compilador C
+        run: gcc --version
+
+      - name: Verificar dependencias
+        run: go mod verify
+
+      - name: Analizar el codigo
+        run: go vet ./...
+
+      - name: Ejecutar pruebas con detector de carreras
+        run: go test -race ./... -count=1 -timeout=60s
+
+      - name: Compilar
+        run: go build ./cmd/auditor
