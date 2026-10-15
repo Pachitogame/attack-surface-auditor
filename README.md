@@ -70,6 +70,14 @@ El archivo de destino no debe existir. Si se interrumpe la ejecución con Ctrl+C
 
 ### Consultar las opciones disponibles
 
+Si descargaste el ejecutable para Windows desde Releases:
+
+```powershell
+.\auditor-windows-amd64.exe -help
+```
+
+Si lo compilaste siguiendo las instrucciones anteriores:
+
 ```powershell
 .\auditor.exe -help
 ```
