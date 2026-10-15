@@ -102,3 +102,13 @@ GitHub Actions ejecuta el análisis, las pruebas con detector de carreras y la c
 Puedes consultar un [informe JSON de una inspección web local](examples/informe-web.json).
 
 Incluye el estado del puerto, la URL, el código de respuesta HTTP, las cabeceras y el título HTML.
+## Descargas
+
+Los ejecutables para Windows x64 y Linux x64 están disponibles en la [versión v0.1.0](https://github.com/Pachitogame/attack-surface-auditor/releases/tag/v0.1.0).
+## Uso de IA durante el desarrollo
+
+El código de la herramienta ha sido construido por mí como parte de mi aprendizaje de Go, redes y ciberseguridad.
+
+He utilizado ChatGPT como apoyo para crear pruebas, obtener información sobre bibliotecas, depurar errores y preparar la documentación y la presentación del repositorio en GitHub.
+
+Durante el proceso también he recibido orientación sobre arquitectura y ejemplos de código, que he revisado e integrado. La implementación y las comprobaciones de funcionamiento las he realizado yo.
