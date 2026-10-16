@@ -106,10 +106,7 @@ func run() int {
 	observar := func(resultado audit.ScanResult) {
 		completados.Add(1)
 		if !*soloAbiertos || resultado.Resultado == audit.EstadoAbierto {
-			fmt.Printf("Direccion: %s, Puerto: %d, Estado: %v\n", resultado.EndpointExaminado.DireccionObjetivo, resultado.EndpointExaminado.Puerto, resultado.Resultado)
-			if resultado.DatosError != nil {
-				fmt.Printf("Error: %v\n", resultado.DatosError)
-			}
+			imprimirResultadoPuerto(os.Stdout, resultado)
 		}
 	}
 	detenerProgreso := make(chan struct{})
@@ -184,9 +181,8 @@ func run() int {
 						Headers:    inspeccion.Headers,
 						Title:      inspeccion.Title,
 					}
-					fmt.Printf("URL: %q, Codigo de estado: %d, Titulo: %q\n", inspeccion.URL, inspeccion.StatusCode, inspeccion.Title)
+					imprimirResultadoWeb(os.Stdout, inspeccion)
 					if inspeccion.Error != nil {
-						fmt.Fprintf(os.Stderr, "Se ha producido un error en la inspeccion: %v\n", inspeccion.Error)
 						informeJSON.Endpoints[indice].Web.Error = inspeccion.Error.Error()
 					}
 				}
@@ -200,14 +196,15 @@ func run() int {
 			informeJSON.Endpoints[indice].Banner = &report.BannerReport{
 				Datos: banner.Datos,
 			}
-			fmt.Printf("Bytes recibidos: %q\n", banner.Datos)
+			imprimirBanner(os.Stdout, resultado.EndpointExaminado, banner.Datos, banner.Error)
 			if banner.Error != nil {
-				fmt.Fprintf(os.Stderr, "Error al capturar el banner: %v\n", banner.Error)
 				informeJSON.Endpoints[indice].Banner.Error = banner.Error.Error()
 			}
 			info, ok := fingerprint.Identify(banner.Datos)
 			if ok {
-				fmt.Printf("Servicio: %q, Version del protocolo: %q, Software: %q\n", info.Servicio, info.VersionProtocolo, info.Software)
+				fmt.Printf("         Servicio: %q\n", info.Servicio)
+				fmt.Printf("         Protocolo: %q\n", info.VersionProtocolo)
+				fmt.Printf("         Software: %q\n", info.Software)
 				informeJSON.Endpoints[indice].Banner.Servicio = &info
 				if *consultarVuln && ctx.Err() == nil {
 					query, compatible := vuln.QueryFromService(info)
@@ -226,7 +223,7 @@ func run() int {
 					}
 				}
 			} else {
-				fmt.Println("Servicio no identificado con los datos recibidos")
+				fmt.Println("         Servicio no identificado con los datos recibidos")
 			}
 		}
 	}
@@ -261,7 +258,7 @@ func run() int {
 				fmt.Println("La consulta no devolvió CVEs candidatos")
 			} else {
 				for _, cve := range resultado.CVEs {
-					fmt.Printf("CVE candidato: %q, Descripcion: %q, URL: %q\n", cve.ID, cve.Description, cve.URL)
+					imprimirCVE(os.Stdout, cve)
 				}
 			}
 		}
