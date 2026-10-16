@@ -17,7 +17,7 @@ func validarConfig(config audit.ScanConfig) error {
 	return nil
 }
 
-func Scan(ctx context.Context, config audit.ScanConfig, endpoints []audit.Endpoint) ([]audit.ScanResult, error) {
+func ScanWithObserver(ctx context.Context, config audit.ScanConfig, endpoints []audit.Endpoint, observar func(audit.ScanResult)) ([]audit.ScanResult, error) {
 	if err := validarConfig(config); err != nil {
 		return nil, err
 	}
@@ -60,10 +60,16 @@ func Scan(ctx context.Context, config audit.ScanConfig, endpoints []audit.Endpoi
 	informe := []audit.ScanResult{}
 	for resultado := range resultados {
 		informe = append(informe, resultado)
+		if observar != nil {
+			observar(resultado)
+		}
 	}
 	err = ctx.Err()
 	if err != nil {
 		return informe, err
 	}
 	return informe, nil
+}
+func Scan(ctx context.Context, config audit.ScanConfig, endpoints []audit.Endpoint) ([]audit.ScanResult, error) {
+	return ScanWithObserver(ctx, config, endpoints, nil)
 }

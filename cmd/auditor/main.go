@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
@@ -37,6 +38,7 @@ func run() int {
 	consultarVuln := flag.Bool("vuln", false, "Consulta posibles CVEs para los servicios identificados")
 	vulnTimeout := flag.Duration("vuln-timeout", 60*time.Second, "Tiempo máximo por consulta de vulnerabilidades, incluidas esperas y páginas")
 	rutaReporte := flag.String("output", "", "Ruta del informe JSON; no sobrescribe archivos existentes")
+	soloAbiertos := flag.Bool("open", false, "Muestra solo los puertos abiertos en la consola, el informe JSON conserva todos los resultados")
 	flag.Parse()
 	if *consultarVuln {
 		if *vulnTimeout <= 0 {
@@ -99,7 +101,35 @@ func run() int {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-	informe, err := scanner.Scan(ctx, config, endpoints)
+	var completados atomic.Int64
+	fmt.Fprintf(os.Stderr, "Iniciando el escaneo de %d puertos...\n", len(endpoints))
+	observar := func(resultado audit.ScanResult) {
+		completados.Add(1)
+		if !*soloAbiertos || resultado.Resultado == audit.EstadoAbierto {
+			fmt.Printf("Direccion: %s, Puerto: %d, Estado: %v\n", resultado.EndpointExaminado.DireccionObjetivo, resultado.EndpointExaminado.Puerto, resultado.Resultado)
+			if resultado.DatosError != nil {
+				fmt.Printf("Error: %v\n", resultado.DatosError)
+			}
+		}
+	}
+	detenerProgreso := make(chan struct{})
+	progresoTerminado := make(chan struct{})
+	go func() {
+		defer close(progresoTerminado)
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		mostrarProgreso(os.Stderr, &completados, len(endpoints), ticker.C, detenerProgreso)
+	}()
+	informe, err := scanner.ScanWithObserver(ctx, config, endpoints, observar)
+	close(detenerProgreso)
+	<-progresoTerminado
+	if ctx.Err() != nil {
+		fmt.Fprintf(os.Stderr, "Escaneo interrumpido: %d/%d puertos examinados\n", completados.Load(), len(endpoints))
+	} else if err != nil {
+		fmt.Fprintf(os.Stderr, "Escaneo finalizado con error: %d/%d puertos examinados\n", completados.Load(), len(endpoints))
+	} else {
+		fmt.Fprintf(os.Stderr, "Escaneo terminado: %d/%d puertos examinados\n", completados.Load(), len(endpoints))
+	}
 	configBanner := fingerprint.Config{
 		Timeout:  *bannerTimeout,
 		MaxBytes: *bannerMaxBytes,
@@ -132,7 +162,6 @@ func run() int {
 		indice := len(informeJSON.Endpoints)
 		informeJSON.Endpoints = append(informeJSON.Endpoints, entrada)
 		indicesReporte[resultado.EndpointExaminado] = indice
-		fmt.Printf("Direccion: %s Puerto:%d, Estado: %v\n", resultado.EndpointExaminado.DireccionObjetivo, resultado.EndpointExaminado.Puerto, resultado.Resultado)
 		if *inspeccionarWeb && resultado.Resultado == audit.EstadoAbierto {
 			esquema := ""
 			switch resultado.EndpointExaminado.Puerto {
@@ -199,9 +228,6 @@ func run() int {
 			} else {
 				fmt.Println("Servicio no identificado con los datos recibidos")
 			}
-		}
-		if resultado.DatosError != nil {
-			fmt.Printf("Error: %v\n", resultado.DatosError)
 		}
 	}
 	if *consultarVuln && len(consultasVuln) > 0 && ctx.Err() == nil {
