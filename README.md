@@ -46,6 +46,12 @@ go build -o auditor.exe ./cmd/auditor
 .\auditor.exe -host 127.0.0.1 -ports 22 -banner
 ```
 
+La captura termina al recibir una identificación SSH completa y válida, sin esperar a que el servidor cierre la conexión.
+
+Para otros servicios, la captura es pasiva: espera datos hasta el cierre de la conexión, el límite de bytes o el timeout. Los servicios que requieren una petición del cliente pueden no enviar un banner espontáneamente.
+
+La finalización anticipada de la captura SSH se incluirá en v0.2.0; el ejecutable publicado de v0.1.0 todavía no la incluye.
+
 ### Inspeccionar servicios web
 
 ```powershell

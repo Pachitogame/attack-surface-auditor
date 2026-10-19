@@ -73,6 +73,10 @@ func Grab(ctx context.Context, endpoint audit.Endpoint, config Config) BannerRes
 			}
 			break
 		}
+		info, identificado := Identify(buferBytes[:total])
+		if identificado && info.Servicio == "ssh" {
+			break
+		}
 	}
 	resultado.Datos = buferBytes[:total]
 	return resultado
