@@ -110,6 +110,27 @@ GitHub Actions ejecuta el análisis, las pruebas con detector de carreras y la c
 Puedes consultar un [informe JSON de una inspección web local](examples/informe-web.json).
 
 Incluye el estado del puerto, la URL, el código de respuesta HTTP, las cabeceras y el título HTML.
+### Redirecciones web
+
+La inspección web sigue hasta 5 redirecciones por defecto. Puedes configurar el límite entre 0 y 10:
+
+```powershell
+.\auditor.exe -host 127.0.0.1 -ports 80 -web -web-max-redirects 3
+```
+
+Para desactivar el seguimiento:
+
+```powershell
+.\auditor.exe -host 127.0.0.1 -ports 80 -web -web-max-redirects 0
+```
+
+Solo se permiten redirecciones al mismo nombre de host. Se permite cambiar de puerto y pasar de HTTP a HTTPS, pero se bloquean los cambios a otro host y de HTTPS a HTTP.
+
+El tiempo configurado con `-web-timeout` se aplica a toda la inspección, incluidas las redirecciones y la lectura del cuerpo.
+
+La consola y el informe JSON incluyen la URL final y los saltos autorizados. Un salto registrado puede terminar en un error de conexión; no implica que su destino haya respondido correctamente.
+
+Esta funcionalidad está disponible en el código de desarrollo y se incluirá en v0.2.0. Los ejecutables publicados de v0.1.0 todavía no la incluyen.
 ## Descargas
 
 Los ejecutables para Windows x64 y Linux x64 están disponibles en la [versión v0.1.0](https://github.com/Pachitogame/attack-surface-auditor/releases/tag/v0.1.0).

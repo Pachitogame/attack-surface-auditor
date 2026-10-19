@@ -85,3 +85,36 @@ func TestImprimirResultadoPuertoErrores(t *testing.T) {
 		})
 	}
 }
+func TestImprimirResultadoWebConRedireccion(t *testing.T) {
+	var salida bytes.Buffer
+	resultado := webinspect.Result{
+		URL:        "http://127.0.0.1/",
+		FinalURL:   "http://127.0.0.1/final",
+		StatusCode: 200,
+		Title:      "Destino final",
+		Redirects: []webinspect.Redirect{
+			{
+				FromURL:    "http://127.0.0.1/",
+				ToURL:      "http://127.0.0.1/final",
+				StatusCode: 302,
+			},
+		},
+	}
+
+	imprimirResultadoWeb(&salida, resultado)
+
+	esperados := []string{
+		`[WEB] "http://127.0.0.1/"`,
+		`Salto 1: HTTP 302 | "http://127.0.0.1/" -> "http://127.0.0.1/final"`,
+		`URL final: "http://127.0.0.1/final"`,
+		"Estado HTTP: 200",
+		`Titulo: "Destino final"`,
+	}
+
+	for _, esperado := range esperados {
+		if !strings.Contains(salida.String(), esperado) {
+			t.Errorf("Falta el contenido %q; salida: %q",
+				esperado, salida.String())
+		}
+	}
+}

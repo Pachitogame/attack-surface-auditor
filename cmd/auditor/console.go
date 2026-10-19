@@ -19,6 +19,12 @@ func imprimirResultadoPuerto(destino io.Writer, resultado audit.ScanResult) {
 }
 func imprimirResultadoWeb(destino io.Writer, resultado webinspect.Result) {
 	fmt.Fprintf(destino, "\n[WEB] %q\n", resultado.URL)
+	for i, salto := range resultado.Redirects {
+		fmt.Fprintf(destino, "      Salto %d: HTTP %d | %q -> %q\n", i+1, salto.StatusCode, salto.FromURL, salto.ToURL)
+	}
+	if resultado.FinalURL != "" && resultado.FinalURL != resultado.URL {
+		fmt.Fprintf(destino, "      URL final: %q\n", resultado.FinalURL)
+	}
 	if resultado.StatusCode != 0 {
 		fmt.Fprintf(destino, "      Estado HTTP: %d\n", resultado.StatusCode)
 	}

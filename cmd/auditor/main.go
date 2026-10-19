@@ -35,6 +35,7 @@ func run() int {
 	inspeccionarWeb := flag.Bool("web", false, "Habilita la inspección HTTP en el puerto 80 y HTTPS en el puerto 443")
 	webTimeout := flag.Duration("web-timeout", 3*time.Second, "Tiempo máximo por inspección web, incluida la lectura del cuerpo")
 	webMaxBytes := flag.Int64("web-max-bytes", 2*1024*1024, "Máximo de bytes del cuerpo antes y después de convertirlo a UTF-8")
+	webMaxRedirects := flag.Int("web-max-redirects", 5, "Máximo de redirecciones web [0-10]; 0 desactiva el seguimiento")
 	consultarVuln := flag.Bool("vuln", false, "Consulta posibles CVEs para los servicios identificados")
 	vulnTimeout := flag.Duration("vuln-timeout", 60*time.Second, "Tiempo máximo por consulta de vulnerabilidades, incluidas esperas y páginas")
 	rutaReporte := flag.String("output", "", "Ruta del informe JSON; no sobrescribe archivos existentes")
@@ -51,6 +52,10 @@ func run() int {
 		}
 	}
 	if *inspeccionarWeb {
+		if *webMaxRedirects < 0 || *webMaxRedirects > 10 {
+			fmt.Fprintf(os.Stderr, "El máximo de redirecciones debe estar en el intervalo [0-10], Recibido: %d", *webTimeout)
+			return 1
+		}
 		if *webTimeout <= 0 {
 			fmt.Fprintf(os.Stderr, "El tiempo limite debe ser mayor que 0. Tiempo recibido: %v\n", *webTimeout)
 			return 1
@@ -134,6 +139,7 @@ func run() int {
 	configWeb := webinspect.Config{
 		Timeout:      *webTimeout,
 		MaxBodyBytes: *webMaxBytes,
+		MaxRedirects: *webMaxRedirects,
 	}
 	configVuln := vuln.Config{
 		Timeout:      *vulnTimeout,
@@ -177,9 +183,17 @@ func run() int {
 					inspeccion := webinspect.Inspect(ctx, direccionWeb.String(), configWeb)
 					informeJSON.Endpoints[indice].Web = &report.WebReport{
 						URL:        inspeccion.URL,
+						FinalURL:   inspeccion.FinalURL,
 						StatusCode: inspeccion.StatusCode,
 						Headers:    inspeccion.Headers,
 						Title:      inspeccion.Title,
+					}
+					for _, salto := range inspeccion.Redirects {
+						informeJSON.Endpoints[indice].Web.Redirects = append(informeJSON.Endpoints[indice].Web.Redirects, report.RedirectReport{
+							FromURL:    salto.FromURL,
+							ToURL:      salto.ToURL,
+							StatusCode: salto.StatusCode,
+						})
 					}
 					imprimirResultadoWeb(os.Stdout, inspeccion)
 					if inspeccion.Error != nil {

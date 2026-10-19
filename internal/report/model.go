@@ -22,11 +22,13 @@ type BannerReport struct {
 	Error    string                   `json:"error,omitempty"`
 }
 type WebReport struct {
-	URL        string      `json:"url"`
-	StatusCode int         `json:"codigo_estado"`
-	Headers    http.Header `json:"cabeceras,omitempty"`
-	Title      string      `json:"titulo,omitempty"`
-	Error      string      `json:"error,omitempty"`
+	URL        string           `json:"url"`
+	FinalURL   string           `json:"url_final,omitempty"`
+	Redirects  []RedirectReport `json:"redirecciones,omitempty"`
+	StatusCode int              `json:"codigo_estado"`
+	Headers    http.Header      `json:"cabeceras,omitempty"`
+	Title      string           `json:"titulo,omitempty"`
+	Error      string           `json:"error,omitempty"`
 }
 type VulnReport struct {
 	Query  vuln.Query `json:"consulta"`
@@ -41,4 +43,9 @@ type Report struct {
 	Estado         string           `json:"estado"`
 	Error          string           `json:"error,omitempty"`
 	Endpoints      []EndpointReport `json:"endpoints"`
+}
+type RedirectReport struct {
+	FromURL    string `json:"origen"`
+	ToURL      string `json:"destino"`
+	StatusCode int    `json:"codigo_estado"`
 }
