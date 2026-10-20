@@ -6,7 +6,7 @@ Herramienta de línea de comandos desarrollada en Go para explorar puertos TCP, 
 
 - Escaneo de puertos TCP con concurrencia configurable.
 - Captura de banners e identificación de servicios SSH.
-- Inspección HTTP y HTTPS en los puertos 80 y 443.
+- Inspección HTTP y HTTPS en puertos configurables.
 - Extracción del título HTML y las cabeceras HTTP.
 - Consulta de CVEs candidatos para versiones de OpenSSH identificadas.
 - Exportación de resultados a JSON sin sobrescribir archivos existentes.
@@ -65,6 +65,20 @@ La consulta requiere activar la captura de banners. Actualmente admite versiones
 ```powershell
 .\auditor.exe -host 127.0.0.1 -ports 22 -banner -vuln
 ```
+
+### Inspeccionar servicios web en puertos personalizados
+
+```powershell
+.\auditor.exe -host 127.0.0.1 -ports "8000,8443" -web -web-http-ports "80,8000" -web-https-ports "443,8443"
+```
+
+`-ports` determina qué puertos se escanean. Las listas `-web-http-ports` y `-web-https-ports` indican qué protocolo utilizar para inspeccionar los puertos abiertos; no añaden puertos al escaneo.
+
+Ambas listas admiten puertos separados por comas y rangos inclusivos. No pueden estar vacías ni compartir un mismo puerto.
+
+Por defecto se utiliza HTTP para el puerto 80 y HTTPS para el 443. La inspección HTTPS mantiene la validación de certificados.
+
+Esta funcionalidad se incluirá en v0.2.0; los ejecutables publicados de v0.1.0 todavía no la incluyen.
 
 ### Guardar un informe JSON
 
