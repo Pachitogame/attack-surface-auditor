@@ -5,6 +5,9 @@ Herramienta de línea de comandos desarrollada en Go para explorar puertos TCP, 
 ## Funcionalidades
 
 - Escaneo de puertos TCP con concurrencia configurable.
+- Resultados durante el escaneo y progreso periódico.
+- Filtro de consola para mostrar únicamente los puertos abiertos.
+- Seguimiento limitado de redirecciones web.
 - Captura de banners e identificación de servicios SSH.
 - Inspección HTTP y HTTPS en puertos configurables.
 - Extracción del título HTML y las cabeceras HTTP.
@@ -21,8 +24,10 @@ Las coincidencias de NVD son CVEs candidatos: requieren revisión para determina
 Utiliza esta herramienta únicamente sobre sistemas propios o para los que tengas autorización.
 ## Requisitos
 
-- Go 1.26.4 o posterior.
-- Acceso a Internet para consultar NVD con `-vuln`.
+- Para utilizar los ejecutables descargables no necesitas instalar Go.
+- Para compilar el código necesitas Go 1.26.4 o posterior.
+- La consulta de CVEs con `-vuln` requiere acceso a Internet.
+- Los ejemplos utilizan servicios locales; si no están escuchando, los puertos aparecerán cerrados.
 
 ## Compilación
 
@@ -39,6 +44,20 @@ go build -o auditor.exe ./cmd/auditor
 ```powershell
 .\auditor.exe -host 127.0.0.1 -ports "22,80,443,8000-8003"
 ```
+
+### Mostrar únicamente puertos abiertos
+
+```powershell
+.\auditor.exe -host 127.0.0.1 -ports "1-65535" -workers 100 -open -output escaneo-completo.json
+```
+
+Los resultados aparecen conforme termina cada conexión y el progreso se actualiza aproximadamente cada segundo.
+
+`-open` filtra únicamente la consola. El informe JSON conserva todos los resultados recogidos, incluidos los puertos cerrados.
+
+El escaneo utiliza conexiones TCP; no incluye UDP. Puedes interrumpirlo con Ctrl+C.
+
+El progreso y el filtro `-open` se incluirán en v0.2.0; no están disponibles en los ejecutables de v0.1.0.
 
 ### Capturar e identificar banners
 
@@ -57,6 +76,28 @@ La finalización anticipada de la captura SSH se incluirá en v0.2.0; el ejecuta
 ```powershell
 .\auditor.exe -host 127.0.0.1 -ports "80,443" -web
 ```
+
+### Redirecciones web
+
+La inspección web sigue hasta 5 redirecciones por defecto. Puedes configurar el límite entre 0 y 10:
+
+```powershell
+.\auditor.exe -host 127.0.0.1 -ports 80 -web -web-max-redirects 3
+```
+
+Para desactivar el seguimiento:
+
+```powershell
+.\auditor.exe -host 127.0.0.1 -ports 80 -web -web-max-redirects 0
+```
+
+Solo se permiten redirecciones al mismo nombre de host. Se permite cambiar de puerto y pasar de HTTP a HTTPS, pero se bloquean los cambios a otro host y de HTTPS a HTTP.
+
+El tiempo configurado con `-web-timeout` se aplica a toda la inspección, incluidas las redirecciones y la lectura del cuerpo.
+
+La consola y el informe JSON incluyen la URL final y los saltos autorizados. Un salto registrado puede terminar en un error de conexión; no implica que su destino haya respondido correctamente.
+
+Esta funcionalidad está disponible en el código de desarrollo y se incluirá en v0.2.0. Los ejecutables publicados de v0.1.0 todavía no la incluyen.
 
 ### Consultar CVEs candidatos
 
@@ -101,6 +142,26 @@ Si lo compilaste siguiendo las instrucciones anteriores:
 ```powershell
 .\auditor.exe -help
 ```
+
+### Uso en Linux
+
+Después de descargar el ejecutable para Linux x64 desde Releases:
+
+```bash
+chmod +x auditor-linux-amd64
+./auditor-linux-amd64 -help
+./auditor-linux-amd64 -host 127.0.0.1 -ports "22,80,443"
+```
+
+Para compilar desde el código fuente en Linux:
+
+```bash
+go build -o auditor ./cmd/auditor
+./auditor -help
+```
+
+Los parámetros son los mismos que en Windows; cambia el nombre y la forma de invocar el ejecutable.
+
 ## Pruebas
 
 ```powershell
@@ -130,27 +191,7 @@ GitHub Actions ejecuta el análisis, las pruebas con detector de carreras y la c
 Puedes consultar un [informe JSON de una inspección web local](examples/informe-web.json).
 
 Incluye el estado del puerto, la URL, el código de respuesta HTTP, las cabeceras y el título HTML.
-### Redirecciones web
 
-La inspección web sigue hasta 5 redirecciones por defecto. Puedes configurar el límite entre 0 y 10:
-
-```powershell
-.\auditor.exe -host 127.0.0.1 -ports 80 -web -web-max-redirects 3
-```
-
-Para desactivar el seguimiento:
-
-```powershell
-.\auditor.exe -host 127.0.0.1 -ports 80 -web -web-max-redirects 0
-```
-
-Solo se permiten redirecciones al mismo nombre de host. Se permite cambiar de puerto y pasar de HTTP a HTTPS, pero se bloquean los cambios a otro host y de HTTPS a HTTP.
-
-El tiempo configurado con `-web-timeout` se aplica a toda la inspección, incluidas las redirecciones y la lectura del cuerpo.
-
-La consola y el informe JSON incluyen la URL final y los saltos autorizados. Un salto registrado puede terminar en un error de conexión; no implica que su destino haya respondido correctamente.
-
-Esta funcionalidad está disponible en el código de desarrollo y se incluirá en v0.2.0. Los ejecutables publicados de v0.1.0 todavía no la incluyen.
 ## Descargas
 
 Los ejecutables para Windows x64 y Linux x64 están disponibles en la [versión v0.1.0](https://github.com/Pachitogame/attack-surface-auditor/releases/tag/v0.1.0).
