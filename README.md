@@ -57,7 +57,6 @@ Los resultados aparecen conforme termina cada conexión y el progreso se actuali
 
 El escaneo utiliza conexiones TCP; no incluye UDP. Puedes interrumpirlo con Ctrl+C.
 
-El progreso y el filtro `-open` se incluirán en v0.2.0; no están disponibles en los ejecutables de v0.1.0.
 
 ### Capturar e identificar banners
 
@@ -69,7 +68,6 @@ La captura termina al recibir una identificación SSH completa y válida, sin es
 
 Para otros servicios, la captura es pasiva: espera datos hasta el cierre de la conexión, el límite de bytes o el timeout. Los servicios que requieren una petición del cliente pueden no enviar un banner espontáneamente.
 
-La finalización anticipada de la captura SSH se incluirá en v0.2.0; el ejecutable publicado de v0.1.0 todavía no la incluye.
 
 ### Inspeccionar servicios web
 
@@ -97,7 +95,6 @@ El tiempo configurado con `-web-timeout` se aplica a toda la inspección, inclui
 
 La consola y el informe JSON incluyen la URL final y los saltos autorizados. Un salto registrado puede terminar en un error de conexión; no implica que su destino haya respondido correctamente.
 
-Esta funcionalidad está disponible en el código de desarrollo y se incluirá en v0.2.0. Los ejecutables publicados de v0.1.0 todavía no la incluyen.
 
 ### Consultar CVEs candidatos
 
@@ -118,8 +115,6 @@ La consulta requiere activar la captura de banners. Actualmente admite versiones
 Ambas listas admiten puertos separados por comas y rangos inclusivos. No pueden estar vacías ni compartir un mismo puerto.
 
 Por defecto se utiliza HTTP para el puerto 80 y HTTPS para el 443. La inspección HTTPS mantiene la validación de certificados.
-
-Esta funcionalidad se incluirá en v0.2.0; los ejecutables publicados de v0.1.0 todavía no la incluyen.
 
 ### Guardar un informe JSON
 
@@ -194,7 +189,10 @@ Incluye el estado del puerto, la URL, el código de respuesta HTTP, las cabecera
 
 ## Descargas
 
-Los ejecutables para Windows x64 y Linux x64 están disponibles en la [versión v0.1.0](https://github.com/Pachitogame/attack-surface-auditor/releases/tag/v0.1.0).
+Los ejecutables para Windows x64 y Linux x64 están disponibles en la [versión v0.2.0](https://github.com/Pachitogame/attack-surface-auditor/releases/tag/v0.2.0).
+
+La release incluye `SHA256SUMS.txt` con los hashes SHA-256 de los ejecutables.
+
 ## Uso de IA durante el desarrollo
 
 El código de la herramienta ha sido construido por mí como parte de mi aprendizaje de Go, redes y ciberseguridad.
