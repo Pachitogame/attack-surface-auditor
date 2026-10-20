@@ -32,7 +32,9 @@ func run() int {
 	capturarBanner := flag.Bool("banner", false, "Habilita la captura y la identificación")
 	bannerTimeout := flag.Duration("banner-timeout", 2*time.Second, "Limita el tiempo total por captura")
 	bannerMaxBytes := flag.Int("banner-max-bytes", 4096, "Limita los bytes recibidos por destino")
-	inspeccionarWeb := flag.Bool("web", false, "Habilita la inspección HTTP en el puerto 80 y HTTPS en el puerto 443")
+	inspeccionarWeb := flag.Bool("web", false, "Habilita la inspección web en los puertos configurados")
+	webHTTPPorts := flag.String("web-http-ports", "80", "Puertos HTTP separados por comas o rangos; solo se inspeccionan si están incluidos en -ports")
+	webHTTPSPorts := flag.String("web-https-ports", "443", "Puertos HTTPS separados por comas o rangos; solo se inspeccionan si están incluidos en -ports")
 	webTimeout := flag.Duration("web-timeout", 3*time.Second, "Tiempo máximo por inspección web, incluida la lectura del cuerpo")
 	webMaxBytes := flag.Int64("web-max-bytes", 2*1024*1024, "Máximo de bytes del cuerpo antes y después de convertirlo a UTF-8")
 	webMaxRedirects := flag.Int("web-max-redirects", 5, "Máximo de redirecciones web [0-10]; 0 desactiva el seguimiento")
@@ -41,6 +43,7 @@ func run() int {
 	rutaReporte := flag.String("output", "", "Ruta del informe JSON; no sobrescribe archivos existentes")
 	soloAbiertos := flag.Bool("open", false, "Muestra solo los puertos abiertos en la consola, el informe JSON conserva todos los resultados")
 	flag.Parse()
+	var esquemasWeb map[int]string
 	if *consultarVuln {
 		if *vulnTimeout <= 0 {
 			fmt.Fprintf(os.Stderr, "El timeout debe ser mayor que 0, se ha recibido %v\n", *vulnTimeout)
@@ -52,8 +55,14 @@ func run() int {
 		}
 	}
 	if *inspeccionarWeb {
+		var errEsquemas error
+		esquemasWeb, errEsquemas = construirEsquemasWeb(*webHTTPPorts, *webHTTPSPorts)
+		if errEsquemas != nil {
+			fmt.Fprintf(os.Stderr, "Error, configuracion de web inválida: %v\n", errEsquemas)
+			return 1
+		}
 		if *webMaxRedirects < 0 || *webMaxRedirects > 10 {
-			fmt.Fprintf(os.Stderr, "El máximo de redirecciones debe estar en el intervalo [0-10], Recibido: %d", *webTimeout)
+			fmt.Fprintf(os.Stderr, "El máximo de redirecciones debe estar en el intervalo [0-10], Recibido: %d\n", *webMaxRedirects)
 			return 1
 		}
 		if *webTimeout <= 0 {
@@ -166,13 +175,7 @@ func run() int {
 		informeJSON.Endpoints = append(informeJSON.Endpoints, entrada)
 		indicesReporte[resultado.EndpointExaminado] = indice
 		if *inspeccionarWeb && resultado.Resultado == audit.EstadoAbierto {
-			esquema := ""
-			switch resultado.EndpointExaminado.Puerto {
-			case 80:
-				esquema = "http"
-			case 443:
-				esquema = "https"
-			}
+			esquema := esquemasWeb[resultado.EndpointExaminado.Puerto]
 			if esquema != "" {
 				direccionWeb := url.URL{
 					Scheme: esquema,
