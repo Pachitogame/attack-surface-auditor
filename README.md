@@ -200,3 +200,7 @@ El código de la herramienta ha sido construido por mí como parte de mi aprendi
 He utilizado ChatGPT como apoyo para crear pruebas, obtener información sobre bibliotecas, depurar errores y preparar la documentación y la presentación del repositorio en GitHub.
 
 Durante el proceso también he recibido orientación sobre arquitectura y ejemplos de código, que he revisado e integrado. La implementación y las comprobaciones de funcionamiento las he realizado yo.
+
+## Licencia
+
+Este proyecto se distribuye bajo la [licencia MIT](LICENSE).
